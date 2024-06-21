@@ -41,8 +41,8 @@ env = gym.make(
         max_episode_duration = 500,
     )
 
-env.add_metric('Position Changes', lambda history : np.sum(np.diff(history['position']) != 0) )
-env.add_metric('Episode Lenght', lambda history : len(history['position']) )
+env.unwrapped.add_metric('Position Changes', lambda history : np.sum(np.diff(history['position']) != 0) )
+env.unwrapped.add_metric('Episode Lenght', lambda history : len(history['position']) )
 
 done, truncated = False, False
 observation, info = env.reset()
@@ -52,4 +52,4 @@ while not done and not truncated:
     observation, reward, done, truncated, info = env.step(action)
     print(observation)
 # Save for render
-# env.save_for_render()
+env.unwrapped.save_for_render()

@@ -44,6 +44,9 @@ while True:
     while not truncated:
         action = env.action_space.sample() #OR manually : action = int(input("Action : ")) 
         observation, reward, done, truncated, info = env.step(action)
+    print(env.unwrapped.historical_info['portfolio_valuation'])
+    if env.unwrapped.historical_info['portfolio_valuation', -1] > 100:
+        break
 
 # Render
-# env.save_for_render()
+env.unwrapped.save_for_render()
