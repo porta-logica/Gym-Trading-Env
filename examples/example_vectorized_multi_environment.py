@@ -43,7 +43,7 @@ if __name__ == "__main__":
         positions = [ -1, -0.5, 0, 0.5, 1, 1.5, 2],
         initial_position = 0,
         trading_fees = 0.01/100,
-        borrow_interest_rate= 0.0003/100,
+        interest_rate= 0.0003/100,
         reward_function = reward_function,
         portfolio_initial_value = 1000,
     )

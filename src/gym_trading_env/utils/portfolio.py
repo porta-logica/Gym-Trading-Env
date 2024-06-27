@@ -19,32 +19,27 @@ class Portfolio:
     def position(self, price):
         return self.asset * price / self.valorisation(price)
 
-    def trade_to_position(self, position, price, trading_fees):
-        # Repay interest
-        current_position = self.position(price)
-        interest_reduction_ratio = 1
-        if position <= 0 and current_position < 0:
-            interest_reduction_ratio = min(1, position / current_position)
-        elif position >= 1 and current_position > 1:
-            interest_reduction_ratio = min(1, (position - 1) / (current_position - 1))
-        if interest_reduction_ratio < 1:
-            self.asset = self.asset - (1 - interest_reduction_ratio) * self.interest_asset
-            self.fiat = self.fiat - (1 - interest_reduction_ratio) * self.interest_fiat
-            self.interest_asset = interest_reduction_ratio * self.interest_asset
-            self.interest_fiat = interest_reduction_ratio * self.interest_fiat
+    def settle_interest(self):
+        self.asset -= self.interest_asset
+        self.interest_asset = 0
+        self.fiat -= self.interest_fiat
+        self.interest_fiat = 0
 
-        # Proceed to trade
-        asset_trade = (position * self.valorisation(price) / price - self.asset)
-        if asset_trade > 0:
-            asset_trade = asset_trade / (1 - trading_fees + trading_fees * position)
-            asset_fiat = - asset_trade * price
-            self.asset = self.asset + asset_trade * (1 - trading_fees)
-            self.fiat = self.fiat + asset_fiat
+    def trade_to_position(self, position, price, trading_fees):
+        current_position = self.position(price)
+        if current_position == position:
+            return
+        assert price > 0, "Price must be greater than zero"
+        relative_value = self.valorisation(price) / price
+        if position > current_position:
+            fiat_cost_factor = 1 + trading_fees
+            cost_position = 1 + position * trading_fees
         else:
-            asset_trade = asset_trade / (1 - trading_fees * position)
-            asset_fiat = - asset_trade * price
-            self.asset = self.asset + asset_trade
-            self.fiat = self.fiat + asset_fiat * (1 - trading_fees)
+            fiat_cost_factor = 1 - trading_fees
+            cost_position = 1 - position * trading_fees
+        asset_trade = (relative_value * position - self.asset) / cost_position
+        self.fiat -= asset_trade * price * fiat_cost_factor
+        self.asset += asset_trade
 
     def update_interest(self, borrow_interest_rate):
         self.interest_asset = max(0, - self.asset) * borrow_interest_rate
